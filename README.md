@@ -1,8 +1,21 @@
 # 🍄 MycoMate - Digital Mushroom Pet
 
-A Tamagotchi-style digital pet game where you care for and nurture your very own mushroom companion!
+```
+🍄✨🍄✨🍄✨🍄✨🍄✨🍄✨🍄✨🍄✨🍄✨🍄
+      __  __                   __  __       _       
+     |  \/  |                 |  \/  |     | |      
+     | \  / |_   _  ___ ___   | \  / | __ _| |_ ___ 
+     | |\/| | | | |/ __/ _ \  | |\/| |/ _` | __/ _ \
+     | |  | | |_| | (_| (_) | | |  | | (_| | ||  __/
+     |_|  |_|\__, |\___\___/  |_|  |_|\__,_|\__\___|
+              __/ |                                 
+             |___/                                  
+            
+         Your Digital Mushroom Pet Companion
+🍄✨🍄✨🍄✨🍄✨🍄✨🍄✨🍄✨🍄✨🍄✨🍄✨🍄
+```
 
-![MycoMate Banner](assets/banner.md)
+A Tamagotchi-style digital pet game where you care for and nurture your very own mushroom companion!
 
 ## 🎮 Features
 
@@ -25,7 +38,7 @@ A Tamagotchi-style digital pet game where you care for and nurture your very own
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/MycoMate-Digital-Pet.git
+git clone https://github.com/aaronjacobs-chelt/MycoMate-Digital-Pet.git
 cd MycoMate-Digital-Pet
 ```
 

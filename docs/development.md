@@ -134,7 +134,7 @@ Terminal-based interface with:
 
 1. **Clone the repository**:
 ```bash
-git clone https://github.com/yourusername/MycoMate-Digital-Pet.git
+git clone https://github.com/aaronjacobs-chelt/MycoMate-Digital-Pet.git
 cd MycoMate-Digital-Pet
 ```
 
