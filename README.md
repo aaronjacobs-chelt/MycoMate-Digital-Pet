@@ -26,6 +26,8 @@ A Tamagotchi-style digital pet game where you care for and nurture your very own
 - **Experience System**: Gain XP through care activities to unlock the magical final stage
 - **Persistent Save Data**: Your pet continues growing even when you're away
 - **Beautiful ASCII Art**: Different visual representations for each growth stage and mood
+- **Enhanced Visual Feedback**: Color-coded stat changes, level-up celebrations, and evolution banners
+- **Personality-Driven Gameplay**: Each personality type offers distinct gameplay experiences
 - **Stats Management**: Monitor hunger, happiness, health, cleanliness, and energy
 
 ## 🚀 Quick Start
@@ -53,6 +55,32 @@ python3 mycomate.py
 2. Your pet will be born as a tiny spore!
 3. Learn about their personality and favorite food
 4. Start caring for your new companion
+
+## ⭐ Recent Improvements (v1.1)
+
+### 🎨 Enhanced Visual Experience
+- **Color-coded stat changes**: See your pet's improvements with green (+) and warnings with red (-)
+- **Celebration banners**: Special ASCII art displays for level-ups and evolution milestones
+- **Personality-driven responses**: Each personality type has unique reactions to care actions
+- **Enhanced emojis**: More expressive visual feedback throughout the game
+
+### ⚖️ Game Balance Improvements
+- **Faster progression**: Reduced time requirements for growth stages (Magical: 72→48hrs, 500→400xp)
+- **Better stat decay**: More forgiving decay rates for improved playability
+- **Personality affects gameplay**: Each personality type now has distinct stat decay patterns:
+  - **Energetic**: High metabolism, burns energy fast, gets dirty easily
+  - **Sleepy**: Conserves energy well, needs stimulation, rests efficiently  
+  - **Playful**: Maintains happiness better, loves interaction
+  - **Shy**: Stays clean, needs attention, gets satisfaction from overcoming shyness
+  - **Curious**: Balanced explorer with moderate energy use
+- **Enhanced food system**: Rebalanced food effects with dynamic favorite food bonuses
+- **Smarter XP distribution**: Context-based bonuses reward good care timing
+- **Necessity-based bonuses**: More rewards when your pet really needs care
+
+### 🎮 Improved Gameplay
+- **Reduced cooldowns**: Better feeding cooldown logic when pet is very hungry
+- **Enhanced health system**: More granular health factors with achievable good care conditions
+- **Better care timing**: XP bonuses for feeding hungry pets and optimal care timing
 
 ## 🎯 How to Play
 
@@ -82,10 +110,10 @@ python3 mycomate.py
 | Stage | Requirements | Time | Health Needed | XP Needed |
 |-------|-------------|------|---------------|-----------|
 | 🌱 **Spore** | Starting stage | 0 hours | - | - |
-| 🌿 **Sprout** | Survival | 6 hours | Any | - |
-| 🍄 **Young** | Basic care | 24 hours | >40% | - |
-| 🍄🍄 **Mature** | Good care | 48 hours | >60% | - |
-| ✨🍄✨ **Magical** | Excellent care | 72 hours | >80% | 500+ |
+| 🌿 **Sprout** | Survival | 4 hours | Any | - |
+| 🍄 **Young** | Basic care | 16 hours | >35% | - |
+| 🍄🍄 **Mature** | Good care | 30 hours | >50% | - |
+| ✨🍄✨ **Magical** | Excellent care | 48 hours | >75% | 400+ |
 
 ### Stats Explained
 

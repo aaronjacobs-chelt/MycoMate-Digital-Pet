@@ -42,22 +42,54 @@ The game interface shows:
 
 ### Personalities
 
-Each pet has a unique personality that affects their responses:
+Each pet has a unique personality that affects both their responses and gameplay mechanics:
 
-- **Shy**: More reserved responses, slower to warm up
-- **Playful**: Energetic responses, loves interaction
-- **Curious**: Investigative responses, notices details
-- **Sleepy**: Relaxed responses, needs more rest
-- **Energetic**: High-energy responses, very active
+#### **Shy** 🤗
+- **Responses**: More reserved, gentle reactions
+- **Stat Effects**: 
+  - Cleanliness decays 30% slower (stays clean by hiding)
+  - Happiness decays 30% faster (needs more attention)
+  - Energy decays 10% slower (conserves energy)
+- **Care Strategy**: Focus on frequent interaction and gentle encouragement
+
+#### **Playful** 🎉
+- **Responses**: Energetic, bouncy reactions
+- **Stat Effects**:
+  - Happiness decays 30% slower (maintains joy naturally)
+  - Energy decays 10% faster (uses energy for play)
+- **Care Strategy**: Regular play sessions and interactive care
+
+#### **Curious** 🔍
+- **Responses**: Investigative, thoughtful reactions
+- **Stat Effects**:
+  - Energy decays 15% faster (exploring uses energy)
+  - Hunger decays 5% faster (burns calories investigating)
+  - Happiness decays 15% slower (exploration keeps content)
+- **Care Strategy**: Balanced care with variety in food types
+
+#### **Sleepy** 😴
+- **Responses**: Relaxed, drowsy reactions
+- **Stat Effects**:
+  - Energy decays 40% slower (conserves energy very well)
+  - Happiness decays 20% faster (gets sad without stimulation)
+  - Hunger decays 10% slower (slower metabolism)
+- **Care Strategy**: Focus on stimulation and regular interaction
+
+#### **Energetic** ⚡
+- **Responses**: High-energy, enthusiastic reactions
+- **Stat Effects**:
+  - Energy decays 30% faster (burns energy from activity)
+  - Hunger decays 20% faster (high metabolism)
+  - Cleanliness decays 10% faster (gets dirty being active)
+- **Care Strategy**: Frequent feeding and energy management
 
 ### Favorite Foods
 
-Every pet has a preferred food type that provides bonus benefits:
-- **Water**: +10 extra hunger, +15 extra happiness, +20 XP
-- **Compost**: +10 extra hunger, +15 extra happiness, +20 XP
-- **Sunshine**: +10 extra hunger, +15 extra happiness, +20 XP
-- **Minerals**: +10 extra hunger, +15 extra happiness, +20 XP
-- **Nutrients**: +10 extra hunger, +15 extra happiness, +20 XP
+Every pet has a preferred food type that provides significant bonus benefits:
+- **Bonus Effects**: +8 extra hunger, +12 extra happiness, +3 extra health
+- **XP Bonus**: +7 extra XP (15 total instead of 8)
+- **Visual Indicator**: The game will show when you're feeding favorite foods
+- **Strategic Use**: Save favorite foods for when your pet really needs a boost!
 
 ## Care Actions
 
@@ -68,11 +100,11 @@ Every pet has a preferred food type that provides bonus benefits:
 **Cooldown**: 30 minutes (reduced if pet is very hungry)
 
 **Food Types and Effects**:
-- **Nutrients**: +25 hunger, +5 happiness, +5 health
-- **Compost**: +20 hunger, +10 happiness, +0 health
-- **Water**: +15 hunger, +5 happiness, +10 health
-- **Sunshine**: +10 hunger, +15 happiness, +15 health
-- **Minerals**: +30 hunger, +0 happiness, +8 health
+- **Nutrients**: +20 hunger, +8 happiness, +5 health (balanced nutrition)
+- **Compost**: +25 hunger, +5 happiness, +3 health (high hunger, low happiness)
+- **Water**: +12 hunger, +3 happiness, +2 health (light meal, hydration)
+- **Sunshine**: +8 hunger, +18 happiness, +8 health (low hunger, high happiness)
+- **Minerals**: +28 hunger, +2 happiness, +12 health (very high hunger, good health)
 
 **Tips**:
 - Feed favorite foods for maximum benefit
@@ -136,12 +168,12 @@ Every pet has a preferred food type that provides bonus benefits:
 ### Growth Requirements
 
 | Stage | Time | Health | XP | Visual |
-|-------|------|--------|----|---------| 
+|-------|------|--------|----|--------| 
 | Spore | 0h | Any | 0 | ○ |
-| Sprout | 6h | Any | 0 | \| |
-| Young | 24h | >40% | 0 | 🍄 |
-| Mature | 48h | >60% | 0 | 🍄🍄 |
-| Magical | 72h | >80% | 500+ | ✨🍄✨ |
+| Sprout | 4h | Any | 0 | \| |
+| Young | 16h | >35% | 0 | 🍄 |
+| Mature | 30h | >50% | 0 | 🍄🍄 |
+| Magical | 48h | >75% | 400+ | ✨🍄✨ |
 
 ### Growth Tips
 
@@ -153,11 +185,64 @@ Every pet has a preferred food type that provides bonus benefits:
 ### Experience Points
 
 Gain XP through:
-- Feeding: +10 XP (+20 with favorite food)
+- Feeding: +8 XP (base) + context bonuses
+- Favorite food: +15 XP total (8 base + 7 bonus)
+- Feeding when very hungry: +3 XP bonus
 - Playing: +15 XP
 - Cleaning: +8 XP
 - Resting: +5 XP
 - Growing: +100 XP bonus
+
+**Context-Based Bonuses**: The game now rewards good care timing with extra XP when your pet really needs attention.
+
+## Visual Feedback and Celebrations
+
+### Color-Coded Stat Changes
+MycoMate now provides enhanced visual feedback when caring for your pet:
+
+- **Green (+)**: Positive stat changes (feeding, playing, cleaning)
+- **Red (-)**: Negative stat changes or warnings
+- **Emojis**: Each stat has its own emoji for quick recognition
+
+**Example**: After feeding, you might see:
+```
++20 🍽️ Hunger | +8 😊 Happiness | +5 ❤️ Health | +10 ⭐ XP
+```
+
+### Celebration Banners
+
+#### Level Up Celebrations
+When your pet gains a level, you'll see a special banner:
+```
+╔════════════════════════════════════════╗
+║  🎉 LEVEL UP! 🎉                  ║
+║                                      ║
+║    Sporeling reached Level 5!        ║
+║                                      ║
+║     ✨ New abilities unlocked! ✨     ║
+╚════════════════════════════════════════╝
+```
+
+#### Evolution Celebrations
+Evolution to a new growth stage triggers a magnificent display:
+```
+╔════════════════════════════════════════╗
+║  🌟 EVOLUTION! 🌟                  ║
+║                                      ║
+║  Sporeling evolved into a Sprout!     ║
+║                                      ║
+║          ○ → |                       ║
+╚════════════════════════════════════════╝
+```
+
+### Personality-Driven Responses
+Each personality type now has unique responses to care actions:
+
+- **Shy pets**: "🤗 Sporeling quietly nibbles the compost..."
+- **Playful pets**: "🎉 Sporeling bounces excitedly while eating nutrients!"
+- **Curious pets**: "🔍 Sporeling carefully examines the water before drinking."
+- **Sleepy pets**: "😴 Sporeling drowsily munches on the sunshine..."
+- **Energetic pets**: "⚡ Sporeling quickly devours the minerals!"
 
 ## Advanced Tips
 
