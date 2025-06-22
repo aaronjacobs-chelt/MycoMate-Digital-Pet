@@ -67,29 +67,80 @@ class MushroomPet:
         if time_passed < 0.01:  # Less than 36 seconds, no update needed
             return
             
-        # Stats decay over time
-        self.hunger = max(0, self.hunger - (time_passed * 5))
-        self.happiness = max(0, self.happiness - (time_passed * 3))
-        self.cleanliness = max(0, self.cleanliness - (time_passed * 2))
-        self.energy = max(0, self.energy - (time_passed * 4))
+        # Improved stat decay rates for better balance
+        # Base decay rates per hour (reduced for better playability)
+        hunger_decay = 4  # Was 5, reduced to be less aggressive
+        happiness_decay = 2.5  # Was 3, slightly reduced
+        cleanliness_decay = 1.5  # Was 2, reduced as cleaning has 1hr cooldown
+        energy_decay = 3.5  # Was 4, slightly reduced
         
-        # Health is affected by other stats
-        if self.hunger < 20 or self.cleanliness < 30:
-            self.health = max(0, self.health - (time_passed * 8))
-        elif self.hunger > 80 and self.cleanliness > 70 and self.happiness > 60:
-            self.health = min(100, self.health + (time_passed * 2))
+        # Personality affects decay rates - each with distinct characteristics
+        if self.personality == 'energetic':
+            energy_decay *= 1.3  # Burns energy much faster from constant activity
+            hunger_decay *= 1.2  # High metabolism from being active
+            cleanliness_decay *= 1.1  # Gets dirty from being active
+        elif self.personality == 'sleepy':
+            energy_decay *= 0.6  # Conserves energy very well
+            happiness_decay *= 1.2  # Gets sad easier without stimulation
+            hunger_decay *= 0.9  # Slower metabolism when resting
+        elif self.personality == 'playful':
+            happiness_decay *= 0.7  # Maintains happiness much better
+            energy_decay *= 1.1  # Uses energy for play but not excessively
+        elif self.personality == 'shy':
+            cleanliness_decay *= 0.7  # Stays much cleaner (hides and avoids mess)
+            happiness_decay *= 1.3  # Needs significantly more attention
+            energy_decay *= 0.9  # Conserves energy by hiding
+        elif self.personality == 'curious':
+            energy_decay *= 1.15  # Uses energy exploring
+            hunger_decay *= 1.05  # Burns some calories investigating
+            happiness_decay *= 0.85  # Exploration keeps them fairly content
+        
+        # Apply decay
+        self.hunger = max(0, self.hunger - (time_passed * hunger_decay))
+        self.happiness = max(0, self.happiness - (time_passed * happiness_decay))
+        self.cleanliness = max(0, self.cleanliness - (time_passed * cleanliness_decay))
+        self.energy = max(0, self.energy - (time_passed * energy_decay))
+        
+        # Improved health system with more granular changes
+        health_change = 0
+        
+        # Negative health factors
+        if self.hunger < 20:
+            health_change -= time_passed * 6  # Was 8, reduced severity
+        if self.cleanliness < 30:
+            health_change -= time_passed * 4
+        if self.happiness < 15:
+            health_change -= time_passed * 2  # Very sad pets get sick
+        if self.energy < 10:
+            health_change -= time_passed * 1  # Exhaustion affects health
+        
+        # Positive health factors (more achievable conditions)
+        good_care_stats = 0
+        if self.hunger > 60: good_care_stats += 1
+        if self.cleanliness > 60: good_care_stats += 1
+        if self.happiness > 50: good_care_stats += 1
+        if self.energy > 40: good_care_stats += 1
+        
+        if good_care_stats >= 3:
+            health_change += time_passed * 2
+        elif good_care_stats >= 2:
+            health_change += time_passed * 0.5
+        
+        # Apply health change
+        self.health = max(0, min(100, self.health + health_change))
         
         # Age and growth
         self.age = self.get_age_in_hours()
         old_stage = self.growth_stage
         
-        if self.age > 72 and self.health > 80 and self.experience > 500:  # 3 days + conditions
+        # Improved growth requirements for better progression balance
+        if self.age > 48 and self.health > 75 and self.experience >= 400:  # 2 days + conditions (reduced from 72hrs and 500xp)
             self.growth_stage = 4  # magical
-        elif self.age > 48 and self.health > 60:  # 2 days
+        elif self.age > 30 and self.health > 50:  # 30 hours (reduced from 48)
             self.growth_stage = 3  # mature
-        elif self.age > 24 and self.health > 40:  # 1 day
+        elif self.age > 16 and self.health > 35:  # 16 hours (reduced from 24)
             self.growth_stage = 2  # young
-        elif self.age > 6:  # 6 hours
+        elif self.age > 4:  # 4 hours (reduced from 6)
             self.growth_stage = 1  # sprout
         
         if self.growth_stage > old_stage:
@@ -214,12 +265,13 @@ class MushroomPet:
             minutes_left = (1800 - time_since_fed) / 60
             return f"⏰ {self.name} is still digesting! Try again in {Colors.YELLOW}{minutes_left:.0f} minutes{Colors.RESET}."
         
+        # Rebalanced food effects (hunger, happiness, health)
         food_effects = {
-            'nutrients': (25, 5, 5),
-            'compost': (20, 10, 0),
-            'water': (15, 5, 10),
-            'sunshine': (10, 15, 15),
-            'minerals': (30, 0, 8)
+            'nutrients': (20, 8, 5),      # Balanced nutrition (reduced hunger gain, increased happiness)
+            'compost': (25, 5, 3),        # High hunger, low happiness, some health
+            'water': (12, 3, 2),          # Light meal, hydration focused
+            'sunshine': (8, 18, 8),       # Low hunger, high happiness and health
+            'minerals': (28, 2, 12)       # Very high hunger, low happiness, good health
         }
         
         hunger_gain, happiness_gain, health_gain = food_effects.get(food_type, (20, 5, 5))
@@ -231,19 +283,28 @@ class MushroomPet:
         old_experience = self.experience
         old_level = self.level
         
-        # Bonus if it's their favorite food
+        # Enhanced favorite food bonus
         is_favorite = food_type == self.favorite_food
         if is_favorite:
-            hunger_gain += 10
-            happiness_gain += 15
-            self.experience += 20
+            hunger_gain += 8   # Reduced from 10
+            happiness_gain += 12  # Reduced from 15
+            health_gain += 3   # Added health bonus for favorite food
+            self.experience += 15  # Reduced from 20
         
         # Apply changes
         self.hunger = min(100, self.hunger + hunger_gain)
         self.happiness = min(100, self.happiness + happiness_gain)
         self.health = min(100, self.health + health_gain)
         self.last_fed = current_time
-        self.experience += 10
+        
+        # Improved XP distribution based on action quality
+        base_xp = 8  # Reduced from 10
+        if is_favorite:
+            base_xp += 7  # Total 15 for favorite food
+        if self.hunger < 30:  # Bonus for feeding when very hungry
+            base_xp += 3
+        
+        self.experience += base_xp
         
         # Check for level up
         new_level = 1 + (self.experience // 100)
@@ -372,10 +433,37 @@ class MushroomPet:
         old_experience = self.experience
         old_level = self.level
         
+        # Improved play effects with personality consideration
+        happiness_gain = 18  # Reduced from 20
+        energy_cost = 12     # Reduced from 15
+        base_xp = 12         # Reduced from 15
+        
+        # Personality affects play effectiveness
+        if self.personality == 'playful':
+            happiness_gain += 5
+            energy_cost -= 2
+            base_xp += 3
+        elif self.personality == 'energetic':
+            energy_cost += 3
+            base_xp += 2
+        elif self.personality == 'sleepy':
+            happiness_gain -= 3
+            energy_cost += 2
+        elif self.personality == 'shy':
+            happiness_gain -= 2
+            base_xp += 1  # Gets more satisfaction from overcoming shyness
+        
         # Apply changes
-        self.happiness = min(100, self.happiness + 20)
-        self.energy = max(0, self.energy - 15)
-        self.experience += 15
+        self.happiness = min(100, self.happiness + happiness_gain)
+        self.energy = max(0, self.energy - energy_cost)
+        
+        # XP bonus for playing when pet is very happy or very sad
+        if self.happiness > 80:
+            base_xp += 2  # Reward maintaining high happiness
+        elif self.happiness < 30:
+            base_xp += 4  # Bigger reward for cheering up sad pet
+        
+        self.experience += base_xp
         self.last_played = current_time
         
         # Check for level up
@@ -458,12 +546,27 @@ class MushroomPet:
         old_experience = self.experience
         old_level = self.level
         
-        # Apply changes
+        # Improved cleaning effects
+        cleanliness_before = self.cleanliness
         self.cleanliness = 100
-        self.happiness = min(100, self.happiness + 10)
-        self.health = min(100, self.health + 5)
+        
+        # Happiness and health gains based on how dirty they were
+        dirtiness = 100 - cleanliness_before
+        happiness_gain = 5 + (dirtiness * 0.1)  # More happiness if they were very dirty
+        health_gain = 3 + (dirtiness * 0.08)    # More health benefit if they were very dirty
+        
+        self.happiness = min(100, self.happiness + happiness_gain)
+        self.health = min(100, self.health + health_gain)
         self.last_cleaned = current_time
-        self.experience += 8
+        
+        # XP based on cleaning necessity
+        base_xp = 6
+        if cleanliness_before < 40:
+            base_xp += 4  # Bonus for cleaning when very dirty
+        elif cleanliness_before < 70:
+            base_xp += 2  # Small bonus for regular maintenance
+        
+        self.experience += base_xp
         
         # Check for level up
         new_level = 1 + (self.experience // 100)
@@ -540,11 +643,29 @@ class MushroomPet:
         old_experience = self.experience
         old_level = self.level
         
-        # Apply changes
-        energy_gain = min(30, 100 - self.energy)  # Don't go over 100
+        # Improved rest effects with personality consideration
+        energy_before = self.energy
+        energy_gain = min(25, 100 - self.energy)  # Reduced from 30
+        
+        # Personality affects rest effectiveness
+        if self.personality == 'sleepy':
+            energy_gain = min(35, 100 - self.energy)  # Sleepy pets rest better
+        elif self.personality == 'energetic':
+            energy_gain = min(20, 100 - self.energy)  # Energetic pets rest less efficiently
+        
         self.energy = min(100, self.energy + energy_gain)
-        self.health = min(100, self.health + 5)
-        self.experience += 5
+        
+        # Health gain based on how tired they were
+        tiredness = 100 - energy_before
+        health_gain = 2 + (tiredness * 0.05)  # More health if they were very tired
+        self.health = min(100, self.health + health_gain)
+        
+        # XP for rest (reduced and based on necessity)
+        base_xp = 3  # Reduced from 5
+        if energy_before < 30:
+            base_xp += 3  # Bonus for resting when very tired
+        
+        self.experience += base_xp
         
         # Check for level up
         new_level = 1 + (self.experience // 100)
