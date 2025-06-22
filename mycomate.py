@@ -11,6 +11,17 @@ import os
 import sys
 from datetime import datetime, timedelta
 
+# Color constants for terminal output
+class Colors:
+    GREEN = '\033[92m'  # Positive changes
+    RED = '\033[91m'    # Negative changes  
+    YELLOW = '\033[93m' # Warnings
+    BLUE = '\033[94m'   # Info
+    PURPLE = '\033[95m' # Special events
+    CYAN = '\033[96m'   # Highlights
+    BOLD = '\033[1m'    # Bold text
+    RESET = '\033[0m'   # Reset to default
+
 class MushroomPet:
     def __init__(self, name="Sporeling"):
         self.name = name
@@ -83,6 +94,8 @@ class MushroomPet:
         
         if self.growth_stage > old_stage:
             self.experience += 100  # Bonus for growing
+            # Store evolution info for later display
+            self._evolution_celebration = self.get_growth_celebration(self.growth_stage)
             
         # Update mood based on stats
         self.update_mood()
@@ -148,19 +161,58 @@ class MushroomPet:
         stages = ['Spore', 'Sprout', 'Young Mushroom', 'Mature Mushroom', 'Magical Mushroom']
         return stages[self.growth_stage]
     
+    def format_stat_change(self, stat_name, old_value, new_value):
+        """Format stat changes with colors and visual indicators"""
+        change = new_value - old_value
+        if change > 0:
+            return f"{Colors.GREEN}+{change:.0f} {stat_name}{Colors.RESET}"
+        elif change < 0:
+            return f"{Colors.RED}{change:.0f} {stat_name}{Colors.RESET}"
+        else:
+            return f"0 {stat_name}"
+    
+    def get_level_up_celebration(self, new_level):
+        """Create celebration message for level ups"""
+        celebration = f"""
+{Colors.YELLOW}╔════════════════════════════════════════╗{Colors.RESET}
+{Colors.YELLOW}║{Colors.RESET}  🎉 {Colors.BOLD}LEVEL UP!{Colors.RESET} 🎉                  {Colors.YELLOW}║{Colors.RESET}
+{Colors.YELLOW}║{Colors.RESET}                                      {Colors.YELLOW}║{Colors.RESET}
+{Colors.YELLOW}║{Colors.RESET}    {self.name} reached Level {new_level}!{' ' * (16 - len(str(new_level)) - len(self.name))} {Colors.YELLOW}║{Colors.RESET}
+{Colors.YELLOW}║{Colors.RESET}                                      {Colors.YELLOW}║{Colors.RESET}
+{Colors.YELLOW}║{Colors.RESET}     ✨ New abilities unlocked! ✨     {Colors.YELLOW}║{Colors.RESET}
+{Colors.YELLOW}╚════════════════════════════════════════╝{Colors.RESET}
+"""
+        return celebration
+    
+    def get_growth_celebration(self, new_stage):
+        """Create celebration message for growth stage evolution"""
+        stage_names = ['Spore', 'Sprout', 'Young Mushroom', 'Mature Mushroom', 'Magical Mushroom']
+        stage_emojis = ['🌱', '🌿', '🍄', '🍄🍄', '✨🍄✨']
+        
+        celebration = f"""
+{Colors.PURPLE}╔════════════════════════════════════════╗{Colors.RESET}
+{Colors.PURPLE}║{Colors.RESET}  🌟 {Colors.BOLD}EVOLUTION!{Colors.RESET} 🌟                  {Colors.PURPLE}║{Colors.RESET}
+{Colors.PURPLE}║{Colors.RESET}                                      {Colors.PURPLE}║{Colors.RESET}
+{Colors.PURPLE}║{Colors.RESET}  {self.name} evolved into a {stage_names[new_stage]}!{' ' * (8 - len(stage_names[new_stage]) - len(self.name))} {Colors.PURPLE}║{Colors.RESET}
+{Colors.PURPLE}║{Colors.RESET}                                      {Colors.PURPLE}║{Colors.RESET}
+{Colors.PURPLE}║{Colors.RESET}          {stage_emojis[new_stage-1]} → {stage_emojis[new_stage]}          {Colors.PURPLE}║{Colors.RESET}
+{Colors.PURPLE}╚════════════════════════════════════════╝{Colors.RESET}
+"""
+        return celebration
+
     def feed(self, food_type='nutrients'):
         """Feed the pet"""
         current_time = time.time()
         
         # Check if actually hungry first
         if self.hunger > 85:
-            return f"{self.name} is not hungry right now! (Hunger: {self.hunger:.0f}%)"
+            return f"🥱 {self.name} is not hungry right now! {Colors.YELLOW}(Hunger: {self.hunger:.0f}%){Colors.RESET}"
         
         # Only apply cooldown if recently fed AND not very hungry
         time_since_fed = current_time - self.last_fed
         if time_since_fed < 1800 and self.hunger > 60:  # 30 min cooldown, but only if not very hungry
             minutes_left = (1800 - time_since_fed) / 60
-            return f"{self.name} is still digesting! Try again in {minutes_left:.0f} minutes."
+            return f"⏰ {self.name} is still digesting! Try again in {Colors.YELLOW}{minutes_left:.0f} minutes{Colors.RESET}."
         
         food_effects = {
             'nutrients': (25, 5, 5),
@@ -172,108 +224,389 @@ class MushroomPet:
         
         hunger_gain, happiness_gain, health_gain = food_effects.get(food_type, (20, 5, 5))
         
+        # Store old values for comparison
+        old_hunger = self.hunger
+        old_happiness = self.happiness
+        old_health = self.health
+        old_experience = self.experience
+        old_level = self.level
+        
         # Bonus if it's their favorite food
-        if food_type == self.favorite_food:
+        is_favorite = food_type == self.favorite_food
+        if is_favorite:
             hunger_gain += 10
             happiness_gain += 15
             self.experience += 20
         
-        old_hunger = self.hunger
+        # Apply changes
         self.hunger = min(100, self.hunger + hunger_gain)
         self.happiness = min(100, self.happiness + happiness_gain)
         self.health = min(100, self.health + health_gain)
         self.last_fed = current_time
         self.experience += 10
         
-        actual_gain = self.hunger - old_hunger
+        # Check for level up
+        new_level = 1 + (self.experience // 100)
+        leveled_up = new_level > old_level
+        if leveled_up:
+            self.level = new_level
         
-        responses = [
-            f"{self.name} happily munches on the {food_type}! *nom nom* (+{actual_gain:.0f} hunger)",
-            f"{self.name} seems to really enjoy the {food_type}! (+{actual_gain:.0f} hunger)",
-            f"*munch munch* {self.name} is satisfied! (+{actual_gain:.0f} hunger)",
-            f"{self.name} grows a little brighter after eating! (+{actual_gain:.0f} hunger)"
-        ]
+        # Create stat change display
+        changes = []
+        if self.hunger > old_hunger:
+            changes.append(self.format_stat_change("🍽️ Hunger", old_hunger, self.hunger))
+        if self.happiness > old_happiness:
+            changes.append(self.format_stat_change("😊 Happiness", old_happiness, self.happiness))
+        if self.health > old_health:
+            changes.append(self.format_stat_change("❤️ Health", old_health, self.health))
+        if self.experience > old_experience:
+            changes.append(self.format_stat_change("⭐ XP", old_experience, self.experience))
         
-        if food_type == self.favorite_food:
-            responses.append(f"{self.name} LOVES {food_type}! It's their favorite! ✨ (+{actual_gain:.0f} hunger)")
+        change_text = " | ".join(changes) if changes else ""
         
-        return random.choice(responses)
+        # Enhanced responses with personality
+        personality_responses = {
+            'shy': [
+                f"🤗 {self.name} quietly nibbles the {food_type}...",
+                f"😊 {self.name} seems pleased with the {food_type}.",
+                f"🙂 *soft munching* {self.name} enjoys their meal."
+            ],
+            'playful': [
+                f"🎉 {self.name} bounces excitedly while eating {food_type}!",
+                f"😄 *happy wiggling* {self.name} loves this {food_type}!",
+                f"🤸 {self.name} does a little dance before eating!"
+            ],
+            'curious': [
+                f"🔍 {self.name} carefully examines the {food_type} before eating.",
+                f"🤔 {self.name} seems intrigued by this {food_type}!",
+                f"👁️ {self.name} studies the {food_type} with interest."
+            ],
+            'sleepy': [
+                f"😴 {self.name} drowsily munches on the {food_type}...",
+                f"🥱 *yawn* {self.name} slowly enjoys their {food_type}.",
+                f"💤 {self.name} eating makes them even more relaxed."
+            ],
+            'energetic': [
+                f"⚡ {self.name} quickly devours the {food_type}!",
+                f"🚀 {self.name} enthusiastically chomps the {food_type}!",
+                f"💨 *rapid munching* {self.name} can't wait to eat!"
+            ]
+        }
+        
+        base_response = random.choice(personality_responses.get(self.personality, [
+            f"🍄 {self.name} happily munches on the {food_type}! *nom nom*",
+            f"😋 {self.name} seems to really enjoy the {food_type}!",
+            f"🤤 *munch munch* {self.name} is satisfied!"
+        ]))
+        
+        # Add favorite food bonus message
+        if is_favorite:
+            base_response += f" ✨ {Colors.CYAN}It's their favorite!{Colors.RESET} ✨"
+        
+        # Combine response with stat changes
+        full_response = f"{base_response}\n{change_text}"
+        
+        # Add level up celebration if applicable
+        if leveled_up:
+            full_response += "\n\n" + self.get_level_up_celebration(new_level)
+        
+        return full_response
     
     def play(self):
         """Play with the pet"""
         current_time = time.time()
         
         if current_time - self.last_played < 1200:  # 20 minutes cooldown
-            return f"{self.name} needs to rest between play sessions!"
+            minutes_left = (1200 - (current_time - self.last_played)) / 60
+            return f"😴 {self.name} needs to rest between play sessions! Try again in {Colors.YELLOW}{minutes_left:.0f} minutes{Colors.RESET}."
         
         if self.energy < 30:  # Increased threshold to avoid the gap
-            return f"{self.name} is too tired to play! Let them rest first."
+            return f"😫 {self.name} is too tired to play! {Colors.RED}(Energy: {self.energy:.0f}%){Colors.RESET} Let them rest first."
         
-        play_activities = [
+        # Personality-based play activities
+        personality_activities = {
+            'shy': [
+                "quietly exploring hidden spots",
+                "gentle leaf rustling",
+                "peaceful meditation",
+                "soft spore floating"
+            ],
+            'playful': [
+                "bouncy mushroom dancing",
+                "energetic cap wiggling",
+                "playful rolling around",
+                "joyful spore celebrations"
+            ],
+            'curious': [
+                "investigating interesting smells",
+                "examining tiny creatures",
+                "studying soil patterns",
+                "exploring new territories"
+            ],
+            'sleepy': [
+                "dreamy swaying motions",
+                "relaxed stretching",
+                "gentle breathing exercises",
+                "cozy burrowing games"
+            ],
+            'energetic': [
+                "high-speed spore racing",
+                "rapid growth competitions",
+                "intense soil digging",
+                "lightning-fast dancing"
+            ]
+        }
+        
+        activities = personality_activities.get(self.personality, [
             "hide and seek among the leaves",
             "rolling in the dirt",
             "dancing in the moonlight",
-            "practicing spore dispersal",
-            "growing contest",
-            "photosynthesis meditation"
-        ]
+            "practicing spore dispersal"
+        ])
         
-        activity = random.choice(play_activities)
+        activity = random.choice(activities)
         
+        # Store old values for comparison
+        old_happiness = self.happiness
+        old_energy = self.energy
+        old_experience = self.experience
+        old_level = self.level
+        
+        # Apply changes
         self.happiness = min(100, self.happiness + 20)
         self.energy = max(0, self.energy - 15)
         self.experience += 15
         self.last_played = current_time
         
-        responses = [
-            f"{self.name} enjoys {activity}! Their cap wiggles with joy!",
-            f"You and {self.name} have fun {activity}!",
-            f"{self.name} seems much happier after {activity}!",
-            f"*giggle* {self.name} loves {activity}!"
-        ]
+        # Check for level up
+        new_level = 1 + (self.experience // 100)
+        leveled_up = new_level > old_level
+        if leveled_up:
+            self.level = new_level
         
-        return random.choice(responses)
+        # Create stat change display
+        changes = []
+        if self.happiness > old_happiness:
+            changes.append(self.format_stat_change("😊 Happiness", old_happiness, self.happiness))
+        if self.energy < old_energy:
+            changes.append(self.format_stat_change("⚡ Energy", old_energy, self.energy))
+        if self.experience > old_experience:
+            changes.append(self.format_stat_change("⭐ XP", old_experience, self.experience))
+        
+        change_text = " | ".join(changes) if changes else ""
+        
+        # Personality-based responses
+        personality_responses = {
+            'shy': [
+                f"🤗 {self.name} shyly enjoys {activity}...",
+                f"😌 {self.name} seems content after {activity}.",
+                f"🙂 *quiet happiness* {self.name} had fun!"
+            ],
+            'playful': [
+                f"🎉 {self.name} has a blast {activity}!",
+                f"😄 *joyful bouncing* {self.name} loves {activity}!",
+                f"🤸 {self.name} can't stop giggling after {activity}!"
+            ],
+            'curious': [
+                f"🔍 {self.name} discovers something interesting while {activity}!",
+                f"🤔 {self.name} learns something new from {activity}!",
+                f"💡 {activity} sparks {self.name}'s curiosity!"
+            ],
+            'sleepy': [
+                f"😴 {self.name} drowsily enjoys {activity}...",
+                f"🥱 {activity} was relaxing for {self.name}.",
+                f"💤 {self.name} feels peacefully tired after {activity}."
+            ],
+            'energetic': [
+                f"⚡ {self.name} energetically tackles {activity}!",
+                f"🚀 {self.name} puts maximum effort into {activity}!",
+                f"💨 {self.name} zooms through {activity} with enthusiasm!"
+            ]
+        }
+        
+        base_response = random.choice(personality_responses.get(self.personality, [
+            f"🎮 {self.name} enjoys {activity}! Their cap wiggles with joy!",
+            f"😊 You and {self.name} have fun {activity}!",
+            f"🎈 {self.name} seems much happier after {activity}!"
+        ]))
+        
+        # Combine response with stat changes
+        full_response = f"{base_response}\n{change_text}"
+        
+        # Add level up celebration if applicable
+        if leveled_up:
+            full_response += "\n\n" + self.get_level_up_celebration(new_level)
+        
+        return full_response
     
     def clean(self):
         """Clean the pet"""
         current_time = time.time()
         
         if current_time - self.last_cleaned < 3600:  # 1 hour cooldown
-            return f"{self.name} is already clean!"
+            time_left = (3600 - (current_time - self.last_cleaned)) / 60
+            return f"✨ {self.name} is already clean! {Colors.YELLOW}(Next cleaning in {time_left:.0f} minutes){Colors.RESET}"
         
+        # Check cleanliness level
+        if self.cleanliness > 90:
+            return f"🧼 {self.name} is already sparkling clean! {Colors.YELLOW}(Cleanliness: {self.cleanliness:.0f}%){Colors.RESET}"
+        
+        # Store old values for comparison
+        old_cleanliness = self.cleanliness
+        old_happiness = self.happiness
+        old_health = self.health
+        old_experience = self.experience
+        old_level = self.level
+        
+        # Apply changes
         self.cleanliness = 100
         self.happiness = min(100, self.happiness + 10)
         self.health = min(100, self.health + 5)
         self.last_cleaned = current_time
         self.experience += 8
         
-        responses = [
-            f"{self.name} sparkles after a good cleaning!",
-            f"You gently brush off {self.name}'s cap. They look refreshed!",
-            f"{self.name} enjoys the spa treatment!",
-            f"All the dirt and debris are gone. {self.name} looks pristine!"
-        ]
+        # Check for level up
+        new_level = 1 + (self.experience // 100)
+        leveled_up = new_level > old_level
+        if leveled_up:
+            self.level = new_level
         
-        return random.choice(responses)
+        # Create stat change display
+        changes = []
+        if self.cleanliness > old_cleanliness:
+            changes.append(self.format_stat_change("🧼 Cleanliness", old_cleanliness, self.cleanliness))
+        if self.happiness > old_happiness:
+            changes.append(self.format_stat_change("😊 Happiness", old_happiness, self.happiness))
+        if self.health > old_health:
+            changes.append(self.format_stat_change("❤️ Health", old_health, self.health))
+        if self.experience > old_experience:
+            changes.append(self.format_stat_change("⭐ XP", old_experience, self.experience))
+        
+        change_text = " | ".join(changes) if changes else ""
+        
+        # Personality-based responses
+        personality_responses = {
+            'shy': [
+                f"🤗 {self.name} quietly enjoys the gentle cleaning...",
+                f"😌 {self.name} seems relaxed during their spa time.",
+                f"🙂 *soft contentment* {self.name} feels much better now."
+            ],
+            'playful': [
+                f"🎉 {self.name} splashes happily during bath time!",
+                f"😄 {self.name} makes bubbles and giggles!",
+                f"🤸 {self.name} does happy wiggles while being cleaned!"
+            ],
+            'curious': [
+                f"🔍 {self.name} examines each bubble with interest!",
+                f"🤔 {self.name} seems fascinated by the cleaning process!",
+                f"👁️ {self.name} watches the dirt wash away curiously."
+            ],
+            'sleepy': [
+                f"😴 {self.name} drowsily enjoys the warm, soothing bath...",
+                f"🥱 *yawn* The cleaning is very relaxing for {self.name}.",
+                f"💤 {self.name} almost falls asleep during the spa treatment."
+            ],
+            'energetic': [
+                f"⚡ {self.name} enthusiastically helps with the cleaning!",
+                f"🚀 {self.name} can't sit still during bath time!",
+                f"💨 {self.name} is excited to get squeaky clean!"
+            ]
+        }
+        
+        base_response = random.choice(personality_responses.get(self.personality, [
+            f"✨ {self.name} sparkles after a good cleaning!",
+            f"🧼 You gently brush off {self.name}'s cap. They look refreshed!",
+            f"🛁 {self.name} enjoys the spa treatment!",
+            f"🌟 All the dirt and debris are gone. {self.name} looks pristine!"
+        ]))
+        
+        # Combine response with stat changes
+        full_response = f"{base_response}\n{change_text}"
+        
+        # Add level up celebration if applicable
+        if leveled_up:
+            full_response += "\n\n" + self.get_level_up_celebration(new_level)
+        
+        return full_response
     
     def rest(self):
         """Let the pet rest"""
         if self.energy > 90:
-            return f"{self.name} is already well-rested! (Energy: {self.energy:.0f}%)"
+            return f"⚡ {self.name} is already well-rested! {Colors.YELLOW}(Energy: {self.energy:.0f}%){Colors.RESET}"
         
+        # Store old values for comparison
+        old_energy = self.energy
+        old_health = self.health
+        old_experience = self.experience
+        old_level = self.level
+        
+        # Apply changes
         energy_gain = min(30, 100 - self.energy)  # Don't go over 100
         self.energy = min(100, self.energy + energy_gain)
         self.health = min(100, self.health + 5)
         self.experience += 5
         
-        responses = [
-            f"{self.name} takes a peaceful nap and feels refreshed! (+{energy_gain} energy)",
-            f"{self.name} burrows into the soil for a cozy rest. (+{energy_gain} energy)",
-            f"Zzz... {self.name} has sweet mushroom dreams! (+{energy_gain} energy)",
-            f"{self.name} absorbs energy from the earth while resting. (+{energy_gain} energy)"
-        ]
+        # Check for level up
+        new_level = 1 + (self.experience // 100)
+        leveled_up = new_level > old_level
+        if leveled_up:
+            self.level = new_level
         
-        return random.choice(responses)
+        # Create stat change display
+        changes = []
+        if self.energy > old_energy:
+            changes.append(self.format_stat_change("⚡ Energy", old_energy, self.energy))
+        if self.health > old_health:
+            changes.append(self.format_stat_change("❤️ Health", old_health, self.health))
+        if self.experience > old_experience:
+            changes.append(self.format_stat_change("⭐ XP", old_experience, self.experience))
+        
+        change_text = " | ".join(changes) if changes else ""
+        
+        # Personality-based responses
+        personality_responses = {
+            'shy': [
+                f"🤗 {self.name} quietly curls up for a peaceful rest...",
+                f"😌 {self.name} finds a cozy, hidden spot to nap.",
+                f"🙂 *soft snoring* {self.name} dreams sweetly."
+            ],
+            'playful': [
+                f"🎉 {self.name} bounces into their favorite sleeping spot!",
+                f"😄 {self.name} does a happy spin before settling down!",
+                f"🤸 Even while resting, {self.name} wiggles with joy!"
+            ],
+            'curious': [
+                f"🔍 {self.name} examines their sleeping area before resting.",
+                f"🤔 {self.name} wonders what dreams will come!",
+                f"👁️ {self.name} studies the patterns in the soil while dozing."
+            ],
+            'sleepy': [
+                f"😴 {self.name} yawns and easily drifts off to sleep...",
+                f"🥱 *stretch* {self.name} was ready for this nap!",
+                f"💤 {self.name} falls into the deepest, most restful sleep."
+            ],
+            'energetic': [
+                f"⚡ {self.name} reluctantly slows down for a power nap!",
+                f"🚀 {self.name} charges up their energy reserves!",
+                f"💨 Even while resting, {self.name} seems ready to go!"
+            ]
+        }
+        
+        base_response = random.choice(personality_responses.get(self.personality, [
+            f"💤 {self.name} takes a peaceful nap and feels refreshed!",
+            f"🛏️ {self.name} burrows into the soil for a cozy rest.",
+            f"😴 Zzz... {self.name} has sweet mushroom dreams!",
+            f"🌙 {self.name} absorbs energy from the earth while resting."
+        ]))
+        
+        # Combine response with stat changes
+        full_response = f"{base_response}\n{change_text}"
+        
+        # Add level up celebration if applicable
+        if leveled_up:
+            full_response += "\n\n" + self.get_level_up_celebration(new_level)
+        
+        return full_response
     
     def get_status(self):
         """Get detailed status of the pet"""
@@ -567,6 +900,12 @@ def main():
         # Show result message if there is one
         if result_message:
             print(f"\n🍄 {result_message}")
+            input("\nPress Enter to continue...")
+        
+        # Check for evolution celebration (triggered by update_stats)
+        if hasattr(pet, '_evolution_celebration'):
+            print("\n" + pet._evolution_celebration)
+            delattr(pet, '_evolution_celebration')  # Remove after showing
             input("\nPress Enter to continue...")
         
         # Auto-save periodically
