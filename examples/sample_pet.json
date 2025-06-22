@@ -1,0 +1,21 @@
+{
+  "name": "Sporeling",
+  "birth_time": 1750550000.0,
+  "last_update": 1750560000.0,
+  "hunger": 75.5,
+  "happiness": 80.2,
+  "health": 95.0,
+  "cleanliness": 85.7,
+  "energy": 60.3,
+  "age": 2.78,
+  "growth_stage": 0,
+  "personality": "playful",
+  "favorite_food": "water",
+  "mood": "happy",
+  "last_fed": 1750559500.0,
+  "last_played": 1750559200.0,
+  "last_cleaned": 1750550000.0,
+  "experience": 45,
+  "level": 1
+}
+

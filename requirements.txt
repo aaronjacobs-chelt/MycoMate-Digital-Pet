@@ -1,0 +1,17 @@
+# MycoMate Digital Pet - Python Dependencies
+# This project uses only Python standard library modules
+# No external dependencies required!
+
+# Python 3.6+ required for:
+# - f-string formatting
+# - json module
+# - time module
+# - random module
+# - os module
+# - datetime module
+
+# For development/testing (optional):
+# pytest>=6.0.0
+# black>=21.0.0
+# flake8>=3.8.0
+
